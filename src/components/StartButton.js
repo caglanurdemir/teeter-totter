@@ -1,10 +1,11 @@
 import { Button } from "@chakra-ui/react";
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { v4 as uuidv4 } from "uuid";
 import { Position, ShapeType, ShapeWeight } from "../constants";
 import {
   addNewElement,
+  endGame,
   restartGame,
   setMovingItem,
   startGame,
@@ -12,17 +13,26 @@ import {
   updateElementOffset,
   updateMobility,
 } from "../redux/action";
-import { randomIntFromInterval, shapePosition } from "../utils/commonFunctions";
+import { randomIntFromInterval } from "../utils/commonFunctions";
 
-const StartButton = () => {
+const StartButton = ({ totalWeightOfLeft, totalWeightOfRight }) => {
   const dispatch = useDispatch();
   const isPlaying = useSelector((state) => state.isPlaying);
   const movingItem = useSelector((state) => state.movingItem);
+  const elements = useSelector((state) => state.elements);
+  const isGameEnded = useSelector((state) => state.isGameEnded);
+
+  const elementsOnLeft = useMemo(() => {
+    return elements.filter(({ position }) => position === Position.LEFT);
+  }, [elements]);
+
+  let countOf10KgsOnLeft = 0;
+  let countOf10KgsOnRight = 0;
 
   const handleOnKeyDown = (e) => {
-    if (movingItem?.offsetTop < 50) {
+    if (movingItem && movingItem.offsetTop < 50) {
       switch (e.keyCode) {
-        case 39:
+        case 37:
           if (movingItem?.index < 5) {
             dispatch(
               updateElementIndex({
@@ -32,7 +42,7 @@ const StartButton = () => {
             );
           }
           break;
-        case 37:
+        case 39:
           if (movingItem?.index > 1) {
             dispatch(
               updateElementIndex({
@@ -55,32 +65,52 @@ const StartButton = () => {
   };
 
   useEffect(() => {
-    if (movingItem?.mobility) {
+    if (movingItem?.mobility && !isGameEnded) {
       let interval;
 
       interval = setInterval(() => {
-        if (movingItem?.offsetTop < 50 && movingItem?.mobility) {
-          dispatch(
-            updateElementOffset({
-              id: movingItem?.id,
-              offsetTop: movingItem?.offsetTop + 10,
-            })
-          );
-        } else if (movingItem?.offsetTop === 50) {
-          dispatch(updateMobility({ id: movingItem?.id }));
+        if (!isGameEnded) {
+          if (movingItem?.offsetTop < 50 && movingItem?.mobility) {
+            dispatch(
+              updateElementOffset({
+                id: movingItem?.id,
+                offsetTop: movingItem?.offsetTop + 10,
+              })
+            );
+          } else if (movingItem?.offsetTop === 50) {
+            if (totalWeightOfLeft >= totalWeightOfRight) {
+              dispatch(endGame());
+              clearInterval(interval);
+            } else {
+              if (!isGameEnded) {
+                elementsOnLeft.forEach(({ weight }) => {
+                  if (weight === 10) {
+                    countOf10KgsOnLeft = countOf10KgsOnLeft + 1;
+                  }
+                });
 
-          const shapeSpecs = getShape();
-          const leftItem = {
-            id: uuidv4(),
-            position: Position.LEFT,
-            index: 3,
-            offsetTop: 10,
-            mobility: true,
-            ...shapeSpecs,
-          };
+                if (countOf10KgsOnLeft === 2) {
+                  dispatch(endGame());
+                  clearInterval(interval);
+                } else {
+                  dispatch(updateMobility({ id: movingItem?.id }));
 
-          dispatch(addNewElement(leftItem));
-          dispatch(setMovingItem(leftItem));
+                  const shapeSpecs = getShape();
+                  const leftItem = {
+                    id: uuidv4(),
+                    position: Position.LEFT,
+                    index: 3,
+                    offsetTop: 10,
+                    mobility: true,
+                    ...shapeSpecs,
+                  };
+
+                  dispatch(addNewElement(leftItem));
+                  dispatch(setMovingItem(leftItem));
+                }
+              }
+            }
+          }
         }
       }, 1000);
 
@@ -124,6 +154,17 @@ const StartButton = () => {
       };
 
       dispatch(addNewElement(leftItem));
+
+      itemsToBeInRight.forEach((element) => {
+        if (element.weight === 10) {
+          countOf10KgsOnRight = countOf10KgsOnRight + 1;
+        }
+      });
+
+      if (countOf10KgsOnRight === 2) {
+        dispatch(endGame());
+      }
+
       dispatch(setMovingItem(leftItem));
       dispatch(startGame());
     } else {
@@ -133,8 +174,8 @@ const StartButton = () => {
 
   return (
     <>
-      <Button onClick={handleStartGameClick} colorScheme="blue">
-        {isPlaying ? "🛑" : "🎬"}
+      <Button onClick={handleStartGameClick} colorScheme="gray">
+        {isPlaying ? "Stop 🛑" : "Start 🎬"}
       </Button>
     </>
   );

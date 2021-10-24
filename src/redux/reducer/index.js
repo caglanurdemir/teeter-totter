@@ -6,12 +6,14 @@ import {
   UPDATE_ELEMENT_OFFSET,
   UPDATE_MOBILITY,
   SET_MOVING_ITEM,
+  END_GAME,
 } from "../action/actionTypes";
 
 const initialState = {
   isPlaying: false,
   elements: [],
   movingItem: {},
+  isGameEnded: false,
 };
 
 export default function reducer(state = initialState, action) {
@@ -73,6 +75,9 @@ export default function reducer(state = initialState, action) {
       };
     case START_GAME: {
       return { ...state, isPlaying: true };
+    }
+    case END_GAME: {
+      return { ...state, isGameEnded: true };
     }
     case RESTART_GAME: {
       return initialState;

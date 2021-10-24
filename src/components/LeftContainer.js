@@ -13,7 +13,7 @@ const LeftContainer = () => {
 
   return (
     <Grid templateColumns="repeat(5, 1fr)">
-      {[1, 2, 3, 4, 5].map((currentIndex) => {
+      {[5, 4, 3, 2, 1].map((currentIndex) => {
         return (
           <Flex
             justifyContent="center"

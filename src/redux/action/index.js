@@ -6,6 +6,7 @@ import {
   UPDATE_ELEMENT_INDEX,
   UPDATE_ELEMENT_OFFSET,
   UPDATE_MOBILITY,
+  END_GAME,
 } from "./actionTypes";
 
 export function addNewElement(data) {
@@ -46,5 +47,10 @@ export function restartGame() {
 export function startGame() {
   return {
     type: START_GAME,
+  };
+}
+export function endGame() {
+  return {
+    type: END_GAME,
   };
 }

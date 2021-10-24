@@ -18,7 +18,11 @@ const RightContainer = () => {
     <Grid templateColumns="repeat(5, 1fr)">
       {[1, 2, 3, 4, 5].map((currentIndex) => {
         return (
-          <Flex justifyContent="center" flexDir="column">
+          <Flex
+            justifyContent="center"
+            flexDir="column-reverse"
+            alignSelf="flex-end"
+          >
             {elementsOnRight.map((element) => {
               if (element?.index === currentIndex) {
                 return <Shape {...element} key={element.id} />;

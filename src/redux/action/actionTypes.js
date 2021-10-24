@@ -5,3 +5,4 @@ export const RESTART_GAME = "RESTART_GAME";
 export const UPDATE_ELEMENT_OFFSET = "UPDATE_ELEMENT_OFFSET";
 export const START_GAME = "START_GAME";
 export const SET_MOVING_ITEM = "SET_MOVING_ITEM";
+export const END_GAME = "END_GAME";
